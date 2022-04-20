@@ -5,7 +5,7 @@ app.use(express.json());
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 const path = require("path");
-const format = require("date-fns/format");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -88,7 +88,11 @@ app.post("/login/", async (request, response) => {
     response.status(400);
     response.send("Invalid user");
   } else {
-    const isPasswordMatched = bcrypt.compare(password, existedUser.password);
+    const isPasswordMatched = await bcrypt.compare(
+      request.body.password,
+      existedUser.password
+    );
+    console.log(isPasswordMatched);
     if (isPasswordMatched) {
       const payload = { username: username };
       const jwtToken = jwt.sign(payload, "RevathiVemula709");
@@ -110,7 +114,8 @@ app.get("/user/tweets/feed/", validateLogin, async (request, response) => {
   tweet, date_time AS dateTime FROM tweet INNER JOIN user 
   ON tweet.user_id = user.user_id INNER JOIN follower 
   ON user.user_id = follower.following_user_id WHERE user.user_id IN
-  (SELECT following_user_id FROM follower WHERE follower_user_id = ${user_id}); 
+  (SELECT following_user_id FROM follower WHERE follower_user_id = ${user_id})
+  ORDER BY tweet.date_time DESC LIMIT 4; 
   `;
   const feed = await db.all(tweetFeedOfFollowingQuery);
   response.send(feed);
@@ -258,16 +263,17 @@ app.get(
   }
 );
 
+//The GET request to the path '/user/tweets/' with valid JWT token should return the list of all tweets of the user
 //API 9
 app.get("/user/tweets/", validateLogin, async (request, response) => {
   const { username } = request;
   const loggedUserQuery = `SELECT user_id FROM user WHERE username = '${username}';`;
   const { user_id } = await db.get(loggedUserQuery);
   const getUserTweetsQuery = `
-    SELECT tweet, count(DISTINCT like_id) AS likes,count(DISTINCT reply_id) as replies,date_time AS dateTime
-    FROM tweet LEFT JOIN like 
+    SELECT tweet, count(DISTINCT like_id) AS likes,count(DISTINCT reply_id) AS replies,date_time AS dateTime
+    FROM tweet INNER JOIN like 
     ON tweet.tweet_id = like.tweet_id 
-    LEFT JOIN reply ON tweet.tweet_id = reply.tweet_id 
+    INNER JOIN reply ON tweet.tweet_id = reply.tweet_id 
     WHERE tweet.user_id = ${user_id};`;
   const userTweets = await db.all(getUserTweetsQuery);
   response.send(userTweets);
@@ -277,7 +283,7 @@ app.get("/user/tweets/", validateLogin, async (request, response) => {
 app.post("/user/tweets/", validateLogin, async (request, response) => {
   const { username } = request;
   const { tweet } = request.body;
-  const dateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+  const dateTime = new Date();
   const loggedUserQuery = `SELECT user_id FROM user WHERE username = '${username}';`;
   const { user_id } = await db.get(loggedUserQuery);
   const createNewTweetQuery = `

@@ -44,7 +44,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZ
 
 ###
 get http://localhost:3000/user/tweets/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjUwMjU2MTc2fQ.xqPy58oGmyPrbJRmL6UjE-rmk3tl1zmQx-bLBJ5L6Ag
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjUwMzcyODQ3fQ.ifC8jBdLO-_tMQJzTuijt5LLTXALgs9TZBIEtTZEvBw
 
 ###
 POST  http://localhost:3000/user/tweets/
